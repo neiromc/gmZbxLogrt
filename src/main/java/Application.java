@@ -86,7 +86,7 @@ public class Application {
             }
 
             System.out.println("Processed line count: " + al.size());
-            saveLastLogFile(lastLogFileNamePath, new LogPair(lastSeq,al.get(al.size() - 1), fileSize));
+            saveLastLogFile(lastLogFileNamePath, new LogPair(lastSeq, fileSize));
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -100,7 +100,7 @@ public class Application {
 
 
     public static void saveLastLogFile(Path fileNamePath, LogPair logPair) {
-        String s = String.valueOf(logPair.getSeq()) + "\n" + logPair.getLine() + "\n" + logPair.getFileSize();
+        String s = String.valueOf(logPair.getSeq()) + "\n" + logPair.getFileSize();
         try {
             Files.write(fileNamePath, s.getBytes()).toFile();
         } catch (IOException e) {
@@ -109,19 +109,20 @@ public class Application {
     }
 
     public static LogPair loadLastLogFile(Path fileNamePath) {
+        System.out.println("Trying loading last log from: " + fileNamePath.toAbsolutePath());
+
         List<String> al;
         LogPair logPair = new LogPair();
         try {
             al = Files.readAllLines(fileNamePath);
             if ( al.size() == 3 ) {
                 logPair.setSeq(Long.parseLong(al.get(0)));
-                logPair.setLine(al.get(1));
+//                logPair.setLine(al.get(1));
                 logPair.setFileSize(Long.parseLong(al.get(2)));
             } else
                 System.err.println(fileNamePath + " size = " + al.size());
 
-            System.out.println("Loading from " + fileNamePath.toAbsolutePath());
-            System.out.println(logPair.toString());
+            System.out.println("Succesfully get data: " + logPair.toString());
 
         } catch (IOException e) {
             e.printStackTrace();
