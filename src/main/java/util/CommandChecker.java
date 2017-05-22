@@ -13,8 +13,11 @@ public class CommandChecker {
     static {
         supportedCommandsMap = new HashMap<>();
 
+        // Supported
         supportedCommandsMap.put("grep", ParseType.GREP);
-        supportedCommandsMap.put("regex", ParseType.REGEX);
+
+        // May supported in future (see implementation in ParseHandler.handle)
+//        supportedCommandsMap.put("regex", ParseType.REGEX);
     }
 
     public static boolean isCommandSupported(String command) {
