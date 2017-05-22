@@ -25,6 +25,13 @@ public class GrepHandler {
 
     //type, array, use_case_sensitivity
     //"grep", a["com.apple","mdworker", "Pushing respawn"], false
+
+    /**
+     * Handle log lines by grep. All lines from grepStrings array must be matched
+     * @param grepStrings matched strings
+     * @param useCaseSensitivity set to false if method must be compare all words from line as lower cased
+     * @return number of lines found
+     */
     private int handleByGrep(String[] grepStrings, boolean useCaseSensitivity) {
 
         System.out.printf("Try to find: %s\n", Arrays.toString(grepStrings));
