@@ -1,8 +1,11 @@
-import handler.GrepHandler;
+import handler.ParseHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import util.CommandChecker;
 import util.LogPair;
 
-import java.io.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -14,6 +17,8 @@ import java.util.List;
  */
 public class Application {
 
+    static final Logger logger = LoggerFactory.getLogger(Application.class);
+
     // TODO: 22.05.17 Move final variables to config YAML
     public static final Path lastLogFileNamePath = Paths.get("LastLogFileOptions.dat");
 
@@ -21,12 +26,20 @@ public class Application {
 
     public static final String myCommand = "grep";
 
+    //ERRORS
+    static final int ERROR_COMMAND_NOT_SUPPORTED = -1;
+    static final int ERROR_FILE_NOT_FOUND = -2;
+    static final int ERROR_CANT_READ_FILE = -3;
+    static final int ERROR_CANT_SAVE_FILE = -4;
+    static final int ERROR_CANT_LOAD_FILE = -5;
+
 // TODO: 22.05.17 Move all console out to LOG except RESULT
 
     public static void main(String[] args) {
 
         if ( ! CommandChecker.isCommandSupported(myCommand) ) {
-            System.out.printf("Error. Command '%s' not supported.\n", myCommand);
+            logger.error("Error. Command '{}' not supported.", myCommand);
+            System.out.println(ERROR_COMMAND_NOT_SUPPORTED);
             System.exit(0);
         }
 
@@ -42,22 +55,22 @@ public class Application {
                 try {
                     long fileSizeLog = Files.size(logFilePath);
                     long fileSizeLogLast = logPair.getFileSize();
-                    System.out.println("Log file size (fileSizeLog): " + fileSizeLog +
-                            ", Last file size (fileSizeLogLst): " + fileSizeLogLast +
-                    ", isEquals=" + (fileSizeLog == fileSizeLogLast));
+                    logger.info("Log file size (fileSizeLog): {}, Last file size (fileSizeLogLst): {}, isEquals=",
+                            fileSizeLog, fileSizeLogLast, (fileSizeLog == fileSizeLogLast)
+                    );
 
                     if ( fileSizeLog > fileSizeLogLast ) {
                         // log file is appended
-                        System.out.println("File is appended");
+                        logger.info("File is appended");
                         startLineSeq = logPair.getSeq();
                     } else
                     if ( fileSizeLog < fileSizeLogLast ) {
                         // log file is rotated
-                        System.out.println("File is rotated");
+                        logger.info("File is rotated");
                         startLineSeq = 0;
                     } else {
                         // log file does not have changes
-                        System.out.println("No changes in file. Skip");
+                        logger.info("No changes in file. Skip");
                         System.exit(0);
                     }
 
@@ -69,25 +82,26 @@ public class Application {
 
 
         } else {
-            System.out.println("File not found: " + lastLogFileNamePath);
+            logger.error("File not found: " + lastLogFileNamePath);
+            System.out.println(ERROR_FILE_NOT_FOUND);
         }
 
+        // get lines
         List<String> al = readLogFile(logFilePath, startLineSeq);
-        // TODO: 19.05.17 write method to grep and solve count of actual lines from $al
 
-        //type, array, use_case_sensetive
-        //"grep", a["com.apple","mdworker", "Pushing respawn"], false
-        GrepHandler grepHandler = new GrepHandler(al);
-        int result = grepHandler.handle("grep",
+        // processing
+        ParseHandler parseHandler = new ParseHandler(al);
+        int result = parseHandler.handle("grep",
                 new String[]{"com.apple","mdworker", "Pushing respawn"},
                 false
         );
 
-        if ( result == -1 ) {
-            System.out.printf("Error. Command '%s' not supported.\n", "some_test");
-        } else {
-            System.out.println("Result: " + result);
-        }
+//        if ( result == -1 ) {
+//            System.out.printf("Error. Command '%s' not supported.\n", "some_test");
+//        } else {
+            logger.info("Result: {} (number of lines found", result);
+            System.out.println(result);
+//        }
 
 
     }
@@ -97,15 +111,15 @@ public class Application {
     public static List<String> readLogFile(Path filePath, long startSeq) {
         List<String> al = new ArrayList<>();
 
-        System.out.println("Try to loading log file: " + filePath.toAbsolutePath());
+        logger.info("Try to loading log file: " + filePath.toAbsolutePath());
 
         try {
             long fileSize = Files.size(filePath);
             al = Files.readAllLines(filePath);
 
             int lastSeq = al.size();
-            System.out.println("Start line (startSeq): " + startSeq);
-            System.out.println("Log file lines count:  " + lastSeq);
+            logger.info("Start line (startSeq): " + startSeq);
+            logger.info("Log file lines count:  " + lastSeq);
 
             long idx = startSeq;
             while ( idx > 0 ) {
@@ -117,13 +131,21 @@ public class Application {
 //                    System.out.printf("%10d\t%s\n", al.indexOf(s) + (lastSeq - al.size()) + 1, s);
 //            }
 
-            System.out.println("Processed line count: " + al.size());
+            logger.info("Processed line count: " + al.size());
             saveLastLogFile(lastLogFileNamePath, new LogPair(lastSeq, fileSize));
 
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            System.out.println(ERROR_FILE_NOT_FOUND);
+            logger.error("File {} not found", filePath.toAbsolutePath());
+            if ( logger.isDebugEnabled() ) {
+                logger.debug(e.getMessage() + "\n" + e.getCause());
+            }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println(ERROR_CANT_READ_FILE);
+            logger.error("Can't read file {}. I/O error", filePath.toAbsolutePath());
+            if ( logger.isDebugEnabled() ) {
+                logger.debug(e.getMessage() + "\n" + e.getCause());
+            }
         }
 
         return al;
@@ -133,7 +155,7 @@ public class Application {
 
     public static void saveLastLogFile(Path fileNamePath, LogPair logPair) {
         String s = String.valueOf(logPair.getSeq()) + "\n" + logPair.getFileSize();
-        System.out.printf("Save lastLog (%s)... => seq: %s, fileSize: %s\n",
+        logger.info("Save lastLog (%s)... => seq: %s, fileSize: %s\n",
                 fileNamePath.toAbsolutePath(),
                 String.valueOf(logPair.getSeq()),
                 logPair.getFileSize()
@@ -142,12 +164,16 @@ public class Application {
         try {
             Files.write(fileNamePath, s.getBytes()).toFile();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println(ERROR_CANT_SAVE_FILE);
+            logger.error("Can't save file {}. I/O error", fileNamePath.toAbsolutePath());
+            if ( logger.isDebugEnabled() ) {
+                logger.debug(e.getMessage() + "\n" + e.getCause());
+            }
         }
     }
 
     public static LogPair loadLastLogFile(Path fileNamePath) {
-        System.out.println("Trying loading last log from: " + fileNamePath.toAbsolutePath());
+        logger.info("Trying loading last log from: " + fileNamePath.toAbsolutePath());
 
         List<String> al;
         LogPair logPair = new LogPair();
@@ -157,12 +183,16 @@ public class Application {
                 logPair.setSeq(Long.parseLong(al.get(0)));
                 logPair.setFileSize(Long.parseLong(al.get(1)));
             } else
-                System.err.println(fileNamePath + " size = " + al.size());
+                logger.info(fileNamePath + " size = " + al.size());
 
-            System.out.println("Succesfully get data: " + logPair.toString());
+            logger.info("Succesfully get data: " + logPair.toString());
 
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println(ERROR_CANT_LOAD_FILE);
+            logger.error("Can't load file {}. I/O error", fileNamePath.toAbsolutePath());
+            if ( logger.isDebugEnabled() ) {
+                logger.debug(e.getMessage() + "\n" + e.getCause());
+            }
         }
 
         return logPair;
