@@ -8,13 +8,13 @@ import java.util.Map;
  */
 public class CommandChecker {
 
-    private static Map<String, GrepType> supportedCommandsMap;
+    private static Map<String, ParseType> supportedCommandsMap;
 
     static {
         supportedCommandsMap = new HashMap<>();
 
-        supportedCommandsMap.put("grep", GrepType.GREP);
-        supportedCommandsMap.put("regex", GrepType.REGEX);
+        supportedCommandsMap.put("grep", ParseType.GREP);
+        supportedCommandsMap.put("regex", ParseType.REGEX);
     }
 
     public static boolean isCommandSupported(String command) {
