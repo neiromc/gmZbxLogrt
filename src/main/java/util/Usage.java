@@ -5,7 +5,7 @@ package util;
  */
 public class Usage {
 
-    public static final String UsageMessage = "java -jar ...";
+    public static final String UsageMessage = "java -jar gmZbxLogrt-X.X.X.jar config.yml";
 
     public static boolean showWithError(String s) {
         System.out.println("Error: " + s);
