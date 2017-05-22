@@ -36,10 +36,10 @@ public class ParseHandler {
     /**
      * Handle log lines by grep. All lines from grepStrings array must be matched
      * @param grepStrings matched strings
-     * @param useCaseSensitivity set to false if method must be compare all words from line as lower cased
+     * @param caseSensitivity set to false if method must be compare all words from line as lower cased
      * @return number of lines found
      */
-    private int handleByGrep(String[] grepStrings, boolean useCaseSensitivity) {
+    private int handleByGrep(String[] grepStrings, boolean caseSensitivity) {
 
         logger.info("Try to find: {}", Arrays.toString(grepStrings));
 
@@ -48,7 +48,7 @@ public class ParseHandler {
         int grepCount;
         for (int i = 0; i < lines.size(); i++) {
             grepCount = 0;
-            if (! useCaseSensitivity )
+            if (! caseSensitivity )
                 sourceStr = lines.get(i).toLowerCase();
             else
                 sourceStr = lines.get(i);

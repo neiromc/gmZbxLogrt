@@ -1,0 +1,21 @@
+#-------------------------------
+# Test description for config file.
+#
+# Author: Neiro
+# Revision: 0.0.1 (20170522_1544)
+#-------------------------------
+#
+# Core config
+#
+save_point: "/Users/neiro/Projects/IntelliJIdea/work/gmZbxLogrt/LastLogFileOptions.dat"
+#
+# Handler config
+#
+log_file: "/var/log/system.log"
+handler:
+  type: "grep"
+  array:
+    - "com.apple"
+    - "mdworker"
+    - "Pushing respawn"
+  case_sensitivity: false

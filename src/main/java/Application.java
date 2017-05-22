@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -40,6 +41,8 @@ public class Application {
 
     public static void main(String[] args) {
 
+        logger.info("Running application...");
+
         ConfigHandler configHandler = ConfigHandler.getInstanse();
         if ( ! configHandler.load(args)) {
             System.exit(0);
@@ -56,6 +59,8 @@ public class Application {
             System.exit(0);
         }
 
+        logger.debug("{} array: {}", config.handler.type.toUpperCase(), Arrays.toString(config.handler.array));
+
         Path logFilePath = Paths.get(processedLogFile);
 
         //load last log
@@ -68,9 +73,8 @@ public class Application {
                 try {
                     long fileSizeLog = Files.size(logFilePath);
                     long fileSizeLogLast = logPair.getFileSize();
-                    logger.info("Log file size (fileSizeLog): {}, Last file size (fileSizeLogLst): {}, isEquals=",
-                            fileSizeLog, fileSizeLogLast, (fileSizeLog == fileSizeLogLast)
-                    );
+                    logger.info("Log file size (fileSizeLog): {}, Last file size (fileSizeLogLst): {}, isEquals={}",
+                            fileSizeLog, fileSizeLogLast, (fileSizeLog == fileSizeLogLast));
 
                     if ( fileSizeLog > fileSizeLogLast ) {
                         // log file is appended
@@ -83,7 +87,8 @@ public class Application {
                         startLineSeq = 0;
                     } else {
                         // log file does not have changes
-                        logger.info("No changes in file. Skip");
+                        logger.info("Complete. No changes in file.");
+                        System.out.println(0);
                         System.exit(0);
                     }
 
@@ -118,6 +123,7 @@ public class Application {
             System.out.println(result);
 //        }
 
+        logger.info("Complete");
 
     }
 
@@ -170,7 +176,7 @@ public class Application {
 
     public static void saveLastLogFile(Path fileNamePath, LogPair logPair) {
         String s = String.valueOf(logPair.getSeq()) + "\n" + logPair.getFileSize();
-        logger.info("Save lastLog (%s)... => seq: %s, fileSize: %s\n",
+        logger.info("Save lastLog ({})... => seq: {}, fileSize: {}",
                 fileNamePath.toAbsolutePath(),
                 String.valueOf(logPair.getSeq()),
                 logPair.getFileSize()
