@@ -22,11 +22,9 @@ public class Application {
 
     static final Logger logger = LoggerFactory.getLogger(Application.class);
 
-    // TODO: 22.05.17 Move final variables to config YAML
     private static Path savePointFileNamePath;
 
     private static String processedLogFile;
-
 
     //ERRORS
     static final int ERROR_COMMAND_NOT_SUPPORTED = -1;
@@ -40,6 +38,8 @@ public class Application {
     private static Config config;
 
     public static void main(String[] args) {
+
+        long startupTime = System.currentTimeMillis();
 
         logger.info("Running application...");
 
@@ -73,8 +73,11 @@ public class Application {
                 try {
                     long fileSizeLog = Files.size(logFilePath);
                     long fileSizeLogLast = logPair.getFileSize();
-                    logger.info("Log file size (fileSizeLog): {}, Last file size (fileSizeLogLst): {}, isEquals={}",
-                            fileSizeLog, fileSizeLogLast, (fileSizeLog == fileSizeLogLast));
+                    logger.info("Log file size (fileSizeLog): {}, Last file size (fileSizeLogLst): {}, Decision: {}",
+                            fileSizeLog,
+                            fileSizeLogLast,
+                            (fileSizeLog == fileSizeLogLast) ? "No changes detected, skip" : "Has a changes, will be processed"
+                    );
 
                     if ( fileSizeLog > fileSizeLogLast ) {
                         // log file is appended
@@ -87,7 +90,8 @@ public class Application {
                         startLineSeq = 0;
                     } else {
                         // log file does not have changes
-                        logger.info("Complete. No changes in file.");
+                        logger.info("Processed 0 lines at {} ms", (System.currentTimeMillis() - startupTime));
+                        logger.info("Complete (skip)");
                         System.out.println(0);
                         System.exit(0);
                     }
@@ -100,8 +104,7 @@ public class Application {
 
 
         } else {
-            logger.error("File not found: " + savePointFileNamePath);
-            System.out.println(ERROR_FILE_NOT_FOUND);
+            logger.error("Save point file not found. Create new: " + savePointFileNamePath);
         }
 
         // get lines
@@ -123,6 +126,7 @@ public class Application {
             System.out.println(result);
 //        }
 
+        logger.info("Processed {} lines at {} ms", al.size(), (System.currentTimeMillis() - startupTime));
         logger.info("Complete");
 
     }
@@ -152,7 +156,7 @@ public class Application {
 //                    System.out.printf("%10d\t%s\n", al.indexOf(s) + (lastSeq - al.size()) + 1, s);
 //            }
 
-            logger.info("Processed line count: " + al.size());
+            logger.info("Processed lines count: " + al.size());
             saveLastLogFile(savePointFileNamePath, new LogPair(lastSeq, fileSize));
 
         } catch (FileNotFoundException e) {

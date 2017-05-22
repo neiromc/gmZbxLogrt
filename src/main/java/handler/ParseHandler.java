@@ -62,7 +62,7 @@ public class ParseHandler {
 
 
             if ( grepCount == grepStrings.length ) {
-                logger.debug("%4d %d  =>  %s\n", i, grepCount, sourceStr);
+                logger.debug("{} {}  =>  {}", i, grepCount, sourceStr);
                 linesCount++;
             }
 
