@@ -119,7 +119,7 @@ public class Application {
 //        if ( result == -1 ) {
 //            System.out.printf("Error. Command '%s' not supported.\n", "some_test");
 //        } else {
-            logger.info("Result: {} (number of lines found", result);
+            logger.info("Result: {} lines found", result);
             System.out.println(result);
 //        }
 
