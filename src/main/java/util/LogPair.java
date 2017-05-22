@@ -1,3 +1,5 @@
+package util;
+
 /**
  * Created by neiro on 19.05.17.
  */
@@ -34,7 +36,7 @@ public class LogPair {
 
     @Override
     public String toString() {
-        return "LogPair{" +
+        return "util.LogPair{" +
                 "seq=" + seq +
                 ", fileSize=" + fileSize +
                 '}';

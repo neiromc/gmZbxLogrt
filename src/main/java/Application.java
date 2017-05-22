@@ -1,3 +1,7 @@
+import handler.GrepHandler;
+import util.CommandChecker;
+import util.LogPair;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,12 +14,23 @@ import java.util.List;
  */
 public class Application {
 
-//    public static String lastLogFileNamePath = "LastLogFileOptions.dat";
-    public static Path lastLogFileNamePath = Paths.get("LastLogFileOptions.dat");
+    // TODO: 22.05.17 Move final variables to config YAML
+    public static final Path lastLogFileNamePath = Paths.get("LastLogFileOptions.dat");
+
+    public static final String myLog = "/var/log/system.log";
+
+    public static final String myCommand = "grep";
+
+// TODO: 22.05.17 Move all console out to LOG except RESULT
 
     public static void main(String[] args) {
 
-        Path logFilePath = Paths.get("/var/log/system.log");
+        if ( ! CommandChecker.isCommandSupported(myCommand) ) {
+            System.out.printf("Error. Command '%s' not supported.\n", myCommand);
+            System.exit(0);
+        }
+
+        Path logFilePath = Paths.get(myLog);
 
         //load last log
         long startLineSeq = 0;
@@ -60,7 +75,24 @@ public class Application {
         List<String> al = readLogFile(logFilePath, startLineSeq);
         // TODO: 19.05.17 write method to grep and solve count of actual lines from $al
 
+        //type, array, use_case_sensetive
+        //"grep", a["com.apple","mdworker", "Pushing respawn"], false
+        GrepHandler grepHandler = new GrepHandler(al);
+        int result = grepHandler.handle("grep",
+                new String[]{"com.apple","mdworker", "Pushing respawn"},
+                false
+        );
+
+        if ( result == -1 ) {
+            System.out.printf("Error. Command '%s' not supported.\n", "some_test");
+        } else {
+            System.out.println("Result: " + result);
+        }
+
+
     }
+
+
 
     public static List<String> readLogFile(Path filePath, long startSeq) {
         List<String> al = new ArrayList<>();
@@ -81,9 +113,9 @@ public class Application {
                 idx--;
             }
 
-            for (String s : al) {
-                    System.out.printf("%10d\t%s\n", al.indexOf(s) + (lastSeq - al.size()) + 1, s);
-            }
+//            for (String s : al) {
+//                    System.out.printf("%10d\t%s\n", al.indexOf(s) + (lastSeq - al.size()) + 1, s);
+//            }
 
             System.out.println("Processed line count: " + al.size());
             saveLastLogFile(lastLogFileNamePath, new LogPair(lastSeq, fileSize));
@@ -101,6 +133,12 @@ public class Application {
 
     public static void saveLastLogFile(Path fileNamePath, LogPair logPair) {
         String s = String.valueOf(logPair.getSeq()) + "\n" + logPair.getFileSize();
+        System.out.printf("Save lastLog (%s)... => seq: %s, fileSize: %s\n",
+                fileNamePath.toAbsolutePath(),
+                String.valueOf(logPair.getSeq()),
+                logPair.getFileSize()
+        );
+
         try {
             Files.write(fileNamePath, s.getBytes()).toFile();
         } catch (IOException e) {
@@ -115,10 +153,9 @@ public class Application {
         LogPair logPair = new LogPair();
         try {
             al = Files.readAllLines(fileNamePath);
-            if ( al.size() == 3 ) {
+            if ( al.size() == 2 ) {
                 logPair.setSeq(Long.parseLong(al.get(0)));
-//                logPair.setLine(al.get(1));
-                logPair.setFileSize(Long.parseLong(al.get(2)));
+                logPair.setFileSize(Long.parseLong(al.get(1)));
             } else
                 System.err.println(fileNamePath + " size = " + al.size());
 
