@@ -3,6 +3,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.CommandChecker;
 import util.LogPair;
+import yaml.Config;
+import yaml.ConfigHandler;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -20,11 +22,10 @@ public class Application {
     static final Logger logger = LoggerFactory.getLogger(Application.class);
 
     // TODO: 22.05.17 Move final variables to config YAML
-    public static final Path lastLogFileNamePath = Paths.get("LastLogFileOptions.dat");
+    private static Path savePointFileNamePath;
 
-    public static final String myLog = "/var/log/system.log";
+    private static String processedLogFile;
 
-    public static final String myCommand = "grep";
 
     //ERRORS
     static final int ERROR_COMMAND_NOT_SUPPORTED = -1;
@@ -35,21 +36,33 @@ public class Application {
 
 // TODO: 22.05.17 Move all console out to LOG except RESULT
 
+    private static Config config;
+
     public static void main(String[] args) {
 
-        if ( ! CommandChecker.isCommandSupported(myCommand) ) {
-            logger.error("Error. Command '{}' not supported.", myCommand);
+        ConfigHandler configHandler = ConfigHandler.getInstanse();
+        if ( ! configHandler.load(args)) {
+            System.exit(0);
+        } else {
+            config = configHandler.getConfig();
+
+            savePointFileNamePath = Paths.get(config.save_point);
+            processedLogFile = config.log_file;
+        }
+
+        if ( ! CommandChecker.isCommandSupported(config.handler.type) ) {
+            logger.error("Error. Command '{}' not supported.", config.handler.type);
             System.out.println(ERROR_COMMAND_NOT_SUPPORTED);
             System.exit(0);
         }
 
-        Path logFilePath = Paths.get(myLog);
+        Path logFilePath = Paths.get(processedLogFile);
 
         //load last log
         long startLineSeq = 0;
 
-        if ( Files.exists(lastLogFileNamePath) ) {
-            LogPair logPair = loadLastLogFile(lastLogFileNamePath);
+        if ( Files.exists(savePointFileNamePath) ) {
+            LogPair logPair = loadLastLogFile(savePointFileNamePath);
 
             if ( logPair != null ) {
                 try {
@@ -82,7 +95,7 @@ public class Application {
 
 
         } else {
-            logger.error("File not found: " + lastLogFileNamePath);
+            logger.error("File not found: " + savePointFileNamePath);
             System.out.println(ERROR_FILE_NOT_FOUND);
         }
 
@@ -91,9 +104,11 @@ public class Application {
 
         // processing
         ParseHandler parseHandler = new ParseHandler(al);
-        int result = parseHandler.handle("grep",
-                new String[]{"com.apple","mdworker", "Pushing respawn"},
-                false
+
+//                new String[]{"com.apple","mdworker", "Pushing respawn"},
+        int result = parseHandler.handle(config.handler.type,
+                config.handler.array,
+                config.handler.case_sensitivity
         );
 
 //        if ( result == -1 ) {
@@ -132,7 +147,7 @@ public class Application {
 //            }
 
             logger.info("Processed line count: " + al.size());
-            saveLastLogFile(lastLogFileNamePath, new LogPair(lastSeq, fileSize));
+            saveLastLogFile(savePointFileNamePath, new LogPair(lastSeq, fileSize));
 
         } catch (FileNotFoundException e) {
             System.out.println(ERROR_FILE_NOT_FOUND);
