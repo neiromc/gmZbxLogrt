@@ -119,7 +119,10 @@ public class Application {
         logger.info("Result: {} lines found", result);
         System.out.println(result);
 
-        logger.info("Processed {} lines at {} ms", al.size(), (System.currentTimeMillis() - startupTime));
+        long totalTime = System.currentTimeMillis() - startupTime;
+        double speed = al.size() / totalTime * 1000;
+
+        logger.info("Processed {} lines at {} ms ({} lines/sec)", al.size(), totalTime, speed);
         logger.info("Complete");
 
     }

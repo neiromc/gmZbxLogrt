@@ -8,6 +8,7 @@ import util.Usage;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.util.Arrays;
 
 /**
  * Created by neiro on 22.05.17.
@@ -58,9 +59,10 @@ public class ConfigHandler {
             return false;
         } catch (YamlException e) {
             Usage.showWithError("Can't read config file: " + fileName);
-            if ( logger.isDebugEnabled() )
-                logger.debug(e.getMessage() + "\n" + e.getCause());
-                e.printStackTrace();
+            if ( logger.isDebugEnabled() ) {
+                logger.debug(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
+//                e.printStackTrace();
+            }
             return false;
         }
 

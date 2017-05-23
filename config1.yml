@@ -15,5 +15,6 @@ save_point_suffix: "good"
 handler:
 #  file_name: "/var/log/system.log"
   file_name: "test.log"
+  charset: "utf-8"
   regex: "^.*(com.apple).*(service only).*(Pushing respawn).*$"
   case_sensitivity: false
