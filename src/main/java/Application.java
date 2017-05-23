@@ -27,7 +27,7 @@ public class Application {
 
     private static Config config;
 
-    private static final String savePointFileName = "save_point.dat";
+    private static final String savePointFileName = "save_point_%s.dat";
 
     public static void main(String[] args) {
 
@@ -41,7 +41,9 @@ public class Application {
         } else {
             config = configHandler.getConfig();
 
-            savePointFileNamePath = Paths.get(config.install_dir + "/" + savePointFileName);
+            savePointFileNamePath = Paths.get(config.install_dir
+                    + "/" + String.format(savePointFileName,config.save_point_suffix));
+
             processedLogFile = config.handler.file_name;
         }
 
@@ -78,6 +80,8 @@ public class Application {
                         logger.info("Complete (skip)");
                         System.out.println(0);
                         System.exit(0);
+
+
                     }
 
                 } catch (IOException e) {

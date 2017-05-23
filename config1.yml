@@ -8,6 +8,7 @@
 # Core config
 #
 install_dir: "/Users/neiro/Projects/IntelliJIdea/work/gmZbxLogrt"
+save_point_suffix: "good"
 #
 # Handler config
 #

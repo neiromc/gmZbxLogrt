@@ -6,6 +6,7 @@ package yaml;
 public class Config {
 
     public String install_dir;
+    public String save_point_suffix;
     public Handler handler;
 
 }
