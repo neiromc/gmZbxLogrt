@@ -58,7 +58,9 @@ public class ConfigHandler {
             return false;
         } catch (YamlException e) {
             Usage.showWithError("Can't read config file: " + fileName);
-//            e.printStackTrace();
+            if ( logger.isDebugEnabled() )
+                logger.debug(e.getMessage() + "\n" + e.getCause());
+                e.printStackTrace();
             return false;
         }
 
