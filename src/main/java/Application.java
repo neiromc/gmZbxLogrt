@@ -27,6 +27,8 @@ public class Application {
 
     private static Config config;
 
+    private static final String savePointFileName = "save_point.dat";
+
     public static void main(String[] args) {
 
         long startupTime = System.currentTimeMillis();
@@ -39,7 +41,7 @@ public class Application {
         } else {
             config = configHandler.getConfig();
 
-            savePointFileNamePath = Paths.get(config.save_point);
+            savePointFileNamePath = Paths.get(config.install_dir + "/" + savePointFileName);
             processedLogFile = config.handler.file_name;
         }
 

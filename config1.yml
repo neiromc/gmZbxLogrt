@@ -7,8 +7,7 @@
 #
 # Core config
 #
-# Path to home (install dir), where application save his data
-save_point: "/Users/neiro/Projects/IntelliJIdea/work/gmZbxLogrt/save_point.dat"
+install_dir: "/Users/neiro/Projects/IntelliJIdea/work/gmZbxLogrt"
 #
 # Handler config
 #
