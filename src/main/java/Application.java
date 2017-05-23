@@ -125,12 +125,7 @@ public class Application {
         ParseHandler parseHandler = new ParseHandler(al);
 
 //                new String[]{"com.apple","mdworker", "Pushing respawn"},
-        int result = 0;
-        if ( config.handler.type.equals("grep"))
-            result = parseHandler.handleByGrep(config.handler.array, config.handler.case_sensitivity);
-        else
-        if ( config.handler.type.equals("regex"))
-            result = parseHandler.handleByRegex(config.handler.regex, config.handler.case_sensitivity);
+        int result = parseHandler.handleByRegex(config.handler.regex, config.handler.case_sensitivity);
 
 //        if ( result == -1 ) {
 //            System.out.printf("Error. Command '%s' not supported.\n", "some_test");
