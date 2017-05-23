@@ -2,7 +2,6 @@ import handler.ParseHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.ErrorCodes;
-import util.LogPair;
 import yaml.Config;
 import yaml.ConfigHandler;
 
@@ -21,7 +20,7 @@ import java.util.List;
  */
 public class Application {
 
-    static final Logger logger = LoggerFactory.getLogger(Application.class);
+    private static final Logger logger = LoggerFactory.getLogger(Application.class);
 
     private static Path savePointFileNamePath;
 
@@ -60,19 +59,18 @@ public class Application {
             if ( savePointFileSize >= 0 ) {
                 try {
                     long fileSizeLog = Files.size(logFilePath);
-                    long fileSizeLogLast = savePointFileSize;
                     logger.info("Log file size (fileSizeLog): {}, Last file size (fileSizeLogLst): {}, Decision: {}",
                             fileSizeLog,
-                            fileSizeLogLast,
-                            (fileSizeLog == fileSizeLogLast) ? "No changes detected, skip" : "Has a changes, will be processed"
+                            savePointFileSize,
+                            (fileSizeLog == savePointFileSize) ? "No changes detected, skip" : "Has a changes, will be processed"
                     );
 
-                    if ( fileSizeLog > fileSizeLogLast ) {
+                    if ( fileSizeLog > savePointFileSize ) {
                         // log file is appended
                         logger.info("File is appended");
                         startLineSeq = savePointFileSize;
                     } else
-                    if ( fileSizeLog < fileSizeLogLast ) {
+                    if ( fileSizeLog < savePointFileSize ) {
                         // log file is rotated
                         logger.info("File is rotated");
                         startLineSeq = 0;
@@ -120,7 +118,7 @@ public class Application {
 
 
 
-    public static List<String> readLogFile(Path filePath, long startSeq, String charset) {
+    private static List<String> readLogFile(Path filePath, long startSeq, String charset) {
         List<String> al = new ArrayList<>();
 
         logger.info("Try to loading log file: " + filePath.toAbsolutePath());
@@ -172,7 +170,7 @@ public class Application {
     }
 
 
-    public static void saveLastLogFile(Path fileNamePath, long fileSize) {
+    private static void saveLastLogFile(Path fileNamePath, long fileSize) {
         //String s = String.valueOf(logPair.getSeq()) + "\n" + logPair.getFileSize();
         logger.info("Save lastLog ({})... => fileSize: {}",
                 fileNamePath.toAbsolutePath(),
@@ -191,12 +189,10 @@ public class Application {
         }
     }
 
-    public static long loadLastLogFile(Path fileNamePath) {
+    private static long loadLastLogFile(Path fileNamePath) {
         logger.info("Trying loading last log from: " + fileNamePath.toAbsolutePath());
 
-        long fileSize = 0;
-        List<String> al;
-        LogPair logPair = new LogPair();
+        long fileSize;
         try {
             String s = Files.readAllLines(fileNamePath).get(0);
             if ( s != null ) {
