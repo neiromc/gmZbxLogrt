@@ -13,9 +13,10 @@ save_point: "/Users/neiro/Projects/IntelliJIdea/work/gmZbxLogrt/LastLogFileOptio
 #
 log_file: "/var/log/system.log"
 handler:
-  type: "grep"
-  array:
-    - "com.apple"
-    - "mdworker"
-    - "Pushing respawn"
+  type: "regex"
+  regex: "^.*(com.apple).*(imtranscoding).*(Unknown key).*$"
+#  array:
+#    - "com.apple"
+#    - "mdworker"
+#    - "Pushing respawn"
   case_sensitivity: false

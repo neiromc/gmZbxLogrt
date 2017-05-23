@@ -39,6 +39,17 @@ public class Application {
 
     public static void main(String[] args) {
 
+        // ^.*(com.apple).*(mdworker).*(pushing respawn).*$
+//        String s1 = "may 23 09:09:58 nibiruqsilver com.apple.xpc.launchd[1] (com.apple.mdworker.single.05000000-0000-0000-0000-000000000000): service only ran for 6 seconds. pushing respawn out by 4 seconds.";
+//
+//        Pattern p = Pattern.compile("^.*(com.apple).*(mdworker).*(pushing respawn).*$");
+//        System.out.println(p.matcher(s1).matches());
+//
+//        System.exit(0);
+
+
+
+
         long startupTime = System.currentTimeMillis();
 
         logger.info("Running application...");
@@ -114,10 +125,12 @@ public class Application {
         ParseHandler parseHandler = new ParseHandler(al);
 
 //                new String[]{"com.apple","mdworker", "Pushing respawn"},
-        int result = parseHandler.handle(config.handler.type,
-                config.handler.array,
-                config.handler.case_sensitivity
-        );
+        int result = 0;
+        if ( config.handler.type.equals("grep"))
+            result = parseHandler.handleByGrep(config.handler.array, config.handler.case_sensitivity);
+        else
+        if ( config.handler.type.equals("regex"))
+            result = parseHandler.handleByRegex(config.handler.regex, config.handler.case_sensitivity);
 
 //        if ( result == -1 ) {
 //            System.out.printf("Error. Command '%s' not supported.\n", "some_test");

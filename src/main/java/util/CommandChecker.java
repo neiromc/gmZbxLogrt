@@ -18,6 +18,7 @@ public class CommandChecker {
         // Supported
 //        supportedCommandsMap.put("grep", ParseType.GREP);
         supportedCommandsList.add("grep");
+        supportedCommandsList.add("regex");
 
         // May supported in future (see implementation in ParseHandler.handle)
 //        supportedCommandsMap.put("regex", ParseType.REGEX);
