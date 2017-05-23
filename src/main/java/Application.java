@@ -8,6 +8,7 @@ import yaml.ConfigHandler;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -96,7 +97,8 @@ public class Application {
         }
 
         // get lines
-        List<String> al = readLogFile(logFilePath, startLineSeq);
+        String charset = (config.handler.charset == null) ? "utf-8" : config.handler.charset;
+        List<String> al = readLogFile(logFilePath, startLineSeq, charset);
         if ( al.size() == 0 ) {
             logger.error("File {} read failed. Exit", logFilePath);
             System.exit(0);
@@ -117,14 +119,14 @@ public class Application {
 
 
 
-    public static List<String> readLogFile(Path filePath, long startSeq) {
+    public static List<String> readLogFile(Path filePath, long startSeq, String charset) {
         List<String> al = new ArrayList<>();
 
         logger.info("Try to loading log file: " + filePath.toAbsolutePath());
 
         try {
             long fileSize = Files.size(filePath);
-            al = Files.readAllLines(filePath);
+            al = Files.readAllLines(filePath, Charset.forName(charset));
 
             int lastSeq = al.size();
             logger.info("Start line (startSeq): " + startSeq);
