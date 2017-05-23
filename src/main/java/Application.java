@@ -144,7 +144,9 @@ public class Application {
             System.out.println(ErrorCodes.ERROR_CANT_READ_FILE);
             logger.error("Can't read file {}. I/O error", filePath.toAbsolutePath());
             if ( logger.isDebugEnabled() ) {
+                logger.debug("----------------");
                 logger.debug(e.getMessage() + "\n" + e.getCause());
+                logger.debug("----------------");
             }
         }
 
