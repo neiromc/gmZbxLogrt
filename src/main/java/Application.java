@@ -97,6 +97,11 @@ public class Application {
 
         // get lines
         List<String> al = readLogFile(logFilePath, startLineSeq);
+        if ( al.size() == 0 ) {
+            logger.error("File {} read failed. Exit", logFilePath);
+            System.exit(0);
+        }
+
 
         // processing
         ParseHandler parseHandler = new ParseHandler(config, al);
