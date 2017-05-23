@@ -6,6 +6,7 @@ import java.util.List;
 /**
  * Created by neiro on 22.05.17.
  */
+@Deprecated
 public class CommandChecker {
 
 //    private static Map<String, ParseType> supportedCommandsMap;

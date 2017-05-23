@@ -2,6 +2,7 @@ package handler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import yaml.Config;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,14 +15,23 @@ public class ParseHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ParseHandler.class);
 
-    private List<String> lines = new ArrayList();
+    private List<String> lines = new ArrayList<>();
+//    private Handler handler;
+    private String regexp;
+    private boolean caseSensitivity;
 
 
-    public ParseHandler(final List lines) {
+    public ParseHandler(final Config config,
+                        final List lines) {
         this.lines = lines;
+//        handler = config.handler;
+
+        regexp = config.handler.regex;
+        caseSensitivity = config.handler.case_sensitivity;
     }
 
-    public int handleByRegex(String regexp, boolean caseSensitivity) {
+//    public int handleByRegex(String regexp, boolean caseSensitivity) {
+    public int handleByRegex() {
         int linesCount = 0;
 
         String regexpStr = regexp;

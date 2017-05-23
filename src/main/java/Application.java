@@ -1,7 +1,6 @@
 import handler.ParseHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import util.CommandChecker;
 import util.LogPair;
 import yaml.Config;
 import yaml.ConfigHandler;
@@ -12,7 +11,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -64,13 +62,13 @@ public class Application {
             processedLogFile = config.log_file;
         }
 
-        if ( ! CommandChecker.isCommandSupported(config.handler.type) ) {
-            logger.error("Error. Command '{}' not supported.", config.handler.type);
-            System.out.println(ERROR_COMMAND_NOT_SUPPORTED);
-            System.exit(0);
-        }
+//        if ( ! CommandChecker.isCommandSupported(config.handler.type) ) {
+//            logger.error("Error. Command '{}' not supported.", config.handler.type);
+//            System.out.println(ERROR_COMMAND_NOT_SUPPORTED);
+//            System.exit(0);
+//        }
 
-        logger.debug("{} array: {}", config.handler.type.toUpperCase(), Arrays.toString(config.handler.array));
+//        logger.debug("{} array: {}", config.handler.type.toUpperCase(), Arrays.toString(config.handler.array));
 
         Path logFilePath = Paths.get(processedLogFile);
 
@@ -122,10 +120,11 @@ public class Application {
         List<String> al = readLogFile(logFilePath, startLineSeq);
 
         // processing
-        ParseHandler parseHandler = new ParseHandler(al);
+        ParseHandler parseHandler = new ParseHandler(config, al);
 
 //                new String[]{"com.apple","mdworker", "Pushing respawn"},
-        int result = parseHandler.handleByRegex(config.handler.regex, config.handler.case_sensitivity);
+//        int result = parseHandler.handleByRegex(config.handler.regex, config.handler.case_sensitivity);
+        int result = parseHandler.handleByRegex();
 
 //        if ( result == -1 ) {
 //            System.out.printf("Error. Command '%s' not supported.\n", "some_test");
