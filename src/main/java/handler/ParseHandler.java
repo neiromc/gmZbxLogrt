@@ -16,7 +16,6 @@ public class ParseHandler {
     private static final Logger logger = LoggerFactory.getLogger(ParseHandler.class);
 
     private List<String> lines = new ArrayList<>();
-//    private Handler handler;
     private String regexp;
     private boolean caseSensitivity;
 
@@ -24,13 +23,11 @@ public class ParseHandler {
     public ParseHandler(final Config config,
                         final List lines) {
         this.lines = lines;
-//        handler = config.handler;
 
         regexp = config.handler.regex;
         caseSensitivity = config.handler.case_sensitivity;
     }
 
-//    public int handleByRegex(String regexp, boolean caseSensitivity) {
     public int handleByRegex() {
         int linesCount = 0;
 

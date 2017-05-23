@@ -97,16 +97,9 @@ public class Application {
         // processing
         ParseHandler parseHandler = new ParseHandler(config, al);
 
-//                new String[]{"com.apple","mdworker", "Pushing respawn"},
-//        int result = parseHandler.handleByRegex(config.handler.regex, config.handler.case_sensitivity);
         int result = parseHandler.handleByRegex();
-
-//        if ( result == -1 ) {
-//            System.out.printf("Error. Command '%s' not supported.\n", "some_test");
-//        } else {
-            logger.info("Result: {} lines found", result);
-            System.out.println(result);
-//        }
+        logger.info("Result: {} lines found", result);
+        System.out.println(result);
 
         logger.info("Processed {} lines at {} ms", al.size(), (System.currentTimeMillis() - startupTime));
         logger.info("Complete");
@@ -133,10 +126,6 @@ public class Application {
                 al.remove(0);
                 idx--;
             }
-
-//            for (String s : al) {
-//                    System.out.printf("%10d\t%s\n", al.indexOf(s) + (lastSeq - al.size()) + 1, s);
-//            }
 
             logger.info("Processed lines count: " + al.size());
             saveLastLogFile(savePointFileNamePath, new LogPair(lastSeq, fileSize));
