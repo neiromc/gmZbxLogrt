@@ -148,6 +148,7 @@ public class Application {
                 logger.debug(e.getMessage() + "\n" + e.getCause());
                 logger.debug("----------------");
             }
+            e.printStackTrace();
         }
 
         return al;
