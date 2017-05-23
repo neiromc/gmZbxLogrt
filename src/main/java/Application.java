@@ -1,6 +1,7 @@
 import handler.ParseHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import util.ErrorCodes;
 import util.LogPair;
 import yaml.Config;
 import yaml.ConfigHandler;
@@ -23,12 +24,6 @@ public class Application {
     private static Path savePointFileNamePath;
 
     private static String processedLogFile;
-
-    //ERRORS
-    private static final int ERROR_FILE_NOT_FOUND = -1;
-    private static final int ERROR_CANT_READ_FILE = -2;
-    private static final int ERROR_CANT_SAVE_FILE = -3;
-    private static final int ERROR_CANT_LOAD_FILE = -4;
 
     private static Config config;
 
@@ -145,13 +140,13 @@ public class Application {
             saveLastLogFile(savePointFileNamePath, new LogPair(lastSeq, fileSize));
 
         } catch (FileNotFoundException e) {
-            System.out.println(ERROR_FILE_NOT_FOUND);
+            System.out.println(ErrorCodes.ERROR_FILE_NOT_FOUND);
             logger.error("File {} not found", filePath.toAbsolutePath());
             if ( logger.isDebugEnabled() ) {
                 logger.debug(e.getMessage() + "\n" + e.getCause());
             }
         } catch (IOException e) {
-            System.out.println(ERROR_CANT_READ_FILE);
+            System.out.println(ErrorCodes.ERROR_CANT_READ_FILE);
             logger.error("Can't read file {}. I/O error", filePath.toAbsolutePath());
             if ( logger.isDebugEnabled() ) {
                 logger.debug(e.getMessage() + "\n" + e.getCause());
@@ -174,7 +169,7 @@ public class Application {
         try {
             Files.write(fileNamePath, s.getBytes()).toFile();
         } catch (IOException e) {
-            System.out.println(ERROR_CANT_SAVE_FILE);
+            System.out.println(ErrorCodes.ERROR_CANT_SAVE_FILE);
             logger.error("Can't save file {}. I/O error", fileNamePath.toAbsolutePath());
             if ( logger.isDebugEnabled() ) {
                 logger.debug(e.getMessage() + "\n" + e.getCause());
@@ -198,7 +193,7 @@ public class Application {
             logger.info("Succesfully get data: " + logPair.toString());
 
         } catch (IOException e) {
-            System.out.println(ERROR_CANT_LOAD_FILE);
+            System.out.println(ErrorCodes.ERROR_CANT_LOAD_FILE);
             logger.error("Can't load file {}. I/O error", fileNamePath.toAbsolutePath());
             if ( logger.isDebugEnabled() ) {
                 logger.debug(e.getMessage() + "\n" + e.getCause());
