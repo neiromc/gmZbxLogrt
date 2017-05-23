@@ -3,6 +3,7 @@ package util;
 /**
  * Created by neiro on 19.05.17.
  */
+@Deprecated
 public class LogPair {
 
     private long seq;

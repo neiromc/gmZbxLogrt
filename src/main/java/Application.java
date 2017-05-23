@@ -6,6 +6,7 @@ import util.LogPair;
 import yaml.Config;
 import yaml.ConfigHandler;
 
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -54,12 +55,12 @@ public class Application {
         long startLineSeq = 0;
 
         if ( Files.exists(savePointFileNamePath) ) {
-            LogPair logPair = loadLastLogFile(savePointFileNamePath);
+            long savePointFileSize = loadLastLogFile(savePointFileNamePath);
 
-            if ( logPair != null ) {
+            if ( savePointFileSize >= 0 ) {
                 try {
                     long fileSizeLog = Files.size(logFilePath);
-                    long fileSizeLogLast = logPair.getFileSize();
+                    long fileSizeLogLast = savePointFileSize;
                     logger.info("Log file size (fileSizeLog): {}, Last file size (fileSizeLogLst): {}, Decision: {}",
                             fileSizeLog,
                             fileSizeLogLast,
@@ -69,7 +70,7 @@ public class Application {
                     if ( fileSizeLog > fileSizeLogLast ) {
                         // log file is appended
                         logger.info("File is appended");
-                        startLineSeq = logPair.getSeq();
+                        startLineSeq = savePointFileSize;
                     } else
                     if ( fileSizeLog < fileSizeLogLast ) {
                         // log file is rotated
@@ -93,7 +94,7 @@ public class Application {
 
 
         } else {
-            logger.error("Save point file not found. Create new: " + savePointFileNamePath);
+            logger.warn("Save point file not found. Create new: " + savePointFileNamePath);
         }
 
         // get lines
@@ -126,20 +127,28 @@ public class Application {
 
         try {
             long fileSize = Files.size(filePath);
-            al = Files.readAllLines(filePath, Charset.forName(charset));
+//            al = Files.readAllLines(filePath, Charset.forName(charset));
 
-            int lastSeq = al.size();
-            logger.info("Start line (startSeq): " + startSeq);
-            logger.info("Log file lines count:  " + lastSeq);
-
-            long idx = startSeq;
-            while ( idx > 0 ) {
-                al.remove(0);
-                idx--;
+            BufferedReader br = Files.newBufferedReader(filePath, Charset.forName(charset));
+//            long skipPos = startSeq;
+            if (startSeq > 0) {
+                logger.info("Skip old bytes. Move to {} byte", startSeq);
+                br.skip(startSeq);
+            }
+            String line;
+            while ( (line = br.readLine()) != null ) {
+                al.add(line);
+//                skipPos += line.length();
             }
 
+            br.close();
+
+            //long lastSeq = fileSize;
+            logger.info("Start line (startSeq): " + startSeq);
+            logger.info("Log file size:  " + fileSize);
+
             logger.info("Processed lines count: " + al.size());
-            saveLastLogFile(savePointFileNamePath, new LogPair(lastSeq, fileSize));
+            saveLastLogFile(savePointFileNamePath, fileSize);
 
         } catch (FileNotFoundException e) {
             System.out.println(ErrorCodes.ERROR_FILE_NOT_FOUND);
@@ -163,16 +172,16 @@ public class Application {
     }
 
 
-    public static void saveLastLogFile(Path fileNamePath, LogPair logPair) {
-        String s = String.valueOf(logPair.getSeq()) + "\n" + logPair.getFileSize();
-        logger.info("Save lastLog ({})... => seq: {}, fileSize: {}",
+    public static void saveLastLogFile(Path fileNamePath, long fileSize) {
+        //String s = String.valueOf(logPair.getSeq()) + "\n" + logPair.getFileSize();
+        logger.info("Save lastLog ({})... => fileSize: {}",
                 fileNamePath.toAbsolutePath(),
-                String.valueOf(logPair.getSeq()),
-                logPair.getFileSize()
+//                String.valueOf(logPair.getSeq()),
+                fileSize
         );
 
         try {
-            Files.write(fileNamePath, s.getBytes()).toFile();
+            Files.write(fileNamePath, String.valueOf(fileSize).getBytes()).toFile();
         } catch (IOException e) {
             System.out.println(ErrorCodes.ERROR_CANT_SAVE_FILE);
             logger.error("Can't save file {}. I/O error", fileNamePath.toAbsolutePath());
@@ -182,20 +191,22 @@ public class Application {
         }
     }
 
-    public static LogPair loadLastLogFile(Path fileNamePath) {
+    public static long loadLastLogFile(Path fileNamePath) {
         logger.info("Trying loading last log from: " + fileNamePath.toAbsolutePath());
 
+        long fileSize = 0;
         List<String> al;
         LogPair logPair = new LogPair();
         try {
-            al = Files.readAllLines(fileNamePath);
-            if ( al.size() == 2 ) {
-                logPair.setSeq(Long.parseLong(al.get(0)));
-                logPair.setFileSize(Long.parseLong(al.get(1)));
-            } else
-                logger.info(fileNamePath + " size = " + al.size());
-
-            logger.info("Succesfully get data: " + logPair.toString());
+            String s = Files.readAllLines(fileNamePath).get(0);
+            if ( s != null ) {
+                if ( (fileSize = Long.parseLong(s)) > 0 ) {
+                    logger.info("Succesfully get fileSize from save point file: {} bytes", fileSize);
+                    return Long.parseLong(s);
+                }
+            }
+//            logger.info(fileNamePath + " size = " + al.size());
+//            logger.info("Succesfully get data: " + s);
 
         } catch (IOException e) {
             System.out.println(ErrorCodes.ERROR_CANT_LOAD_FILE);
@@ -205,7 +216,7 @@ public class Application {
             }
         }
 
-        return logPair;
+        return -1;
 
     }
 

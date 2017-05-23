@@ -13,6 +13,7 @@ save_point_suffix: "good"
 # Handler config
 #
 handler:
-  file_name: "/var/log/system.log"
+#  file_name: "/var/log/system.log"
+  file_name: "test.log"
   regex: "^.*(com.apple).*(service only).*(Pushing respawn).*$"
   case_sensitivity: false
