@@ -6,9 +6,6 @@ package yaml;
 public class Config {
 
     public String save_point;
-
-    public String log_file;
-
     public Handler handler;
 
 }

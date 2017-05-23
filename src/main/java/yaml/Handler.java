@@ -5,6 +5,7 @@ package yaml;
  */
 public class Handler {
 
+    public String file_name;
     public String regex;
     public boolean case_sensitivity;
 

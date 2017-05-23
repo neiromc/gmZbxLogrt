@@ -7,11 +7,12 @@
 #
 # Core config
 #
-save_point: "/Users/neiro/Projects/IntelliJIdea/work/gmZbxLogrt/LastLogFileOptions.dat"
+# Path to home (install dir), where application save his data
+save_point: "/Users/neiro/Projects/IntelliJIdea/work/gmZbxLogrt/save_point.dat"
 #
 # Handler config
 #
-log_file: "/var/log/system.log"
 handler:
+  file_name: "/var/log/system.log"
   regex: "^.*(com.apple).*(service only).*(Pushing respawn).*$"
   case_sensitivity: false

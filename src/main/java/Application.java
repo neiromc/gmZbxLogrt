@@ -40,7 +40,7 @@ public class Application {
             config = configHandler.getConfig();
 
             savePointFileNamePath = Paths.get(config.save_point);
-            processedLogFile = config.log_file;
+            processedLogFile = config.handler.file_name;
         }
 
         Path logFilePath = Paths.get(processedLogFile);
