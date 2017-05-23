@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -58,7 +59,14 @@ public class Application {
 
             if ( savePointFileSize >= 0 ) {
                 try {
-                    long fileSizeLog = Files.size(logFilePath);
+                    long fileSizeLog = 0;
+                    if ( Files.exists(logFilePath) )
+                        fileSizeLog = Files.size(logFilePath);
+                    else {
+                        logger.error("File {} not found", logFilePath.toAbsolutePath());
+                        System.exit(0);
+                    }
+
                     logger.info("Log file size (fileSizeLog): {}, Last file size (fileSizeLogLst): {}, Decision: {}",
                             fileSizeLog,
                             savePointFileSize,
@@ -99,7 +107,7 @@ public class Application {
         String charset = (config.handler.charset == null) ? "utf-8" : config.handler.charset;
         List<String> al = readLogFile(logFilePath, startLineSeq, charset);
         if ( al.size() == 0 ) {
-            logger.error("File {} read failed. Exit", logFilePath);
+//            logger.error("File {} read failed. Exit", logFilePath);
             System.exit(0);
         }
 
@@ -125,10 +133,8 @@ public class Application {
 
         try {
             long fileSize = Files.size(filePath);
-//            al = Files.readAllLines(filePath, Charset.forName(charset));
 
             BufferedReader br = Files.newBufferedReader(filePath, Charset.forName(charset));
-//            long skipPos = startSeq;
             if (startSeq > 0) {
                 logger.info("Skip old bytes. Move to {} byte", startSeq);
                 br.skip(startSeq);
@@ -136,7 +142,6 @@ public class Application {
             String line;
             while ( (line = br.readLine()) != null ) {
                 al.add(line);
-//                skipPos += line.length();
             }
 
             br.close();
@@ -159,10 +164,10 @@ public class Application {
             logger.error("Can't read file {}. I/O error", filePath.toAbsolutePath());
             if ( logger.isDebugEnabled() ) {
                 logger.debug("----------------");
-                logger.debug(e.getMessage() + "\n" + e.getCause());
+                logger.debug(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
                 logger.debug("----------------");
             }
-            e.printStackTrace();
+//            e.printStackTrace();
         }
 
         return al;
