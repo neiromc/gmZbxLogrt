@@ -25,28 +25,14 @@ public class Application {
     private static String processedLogFile;
 
     //ERRORS
-    static final int ERROR_COMMAND_NOT_SUPPORTED = -1;
-    static final int ERROR_FILE_NOT_FOUND = -2;
-    static final int ERROR_CANT_READ_FILE = -3;
-    static final int ERROR_CANT_SAVE_FILE = -4;
-    static final int ERROR_CANT_LOAD_FILE = -5;
-
-// TODO: 22.05.17 Move all console out to LOG except RESULT
+    private static final int ERROR_FILE_NOT_FOUND = -1;
+    private static final int ERROR_CANT_READ_FILE = -2;
+    private static final int ERROR_CANT_SAVE_FILE = -3;
+    private static final int ERROR_CANT_LOAD_FILE = -4;
 
     private static Config config;
 
     public static void main(String[] args) {
-
-        // ^.*(com.apple).*(mdworker).*(pushing respawn).*$
-//        String s1 = "may 23 09:09:58 nibiruqsilver com.apple.xpc.launchd[1] (com.apple.mdworker.single.05000000-0000-0000-0000-000000000000): service only ran for 6 seconds. pushing respawn out by 4 seconds.";
-//
-//        Pattern p = Pattern.compile("^.*(com.apple).*(mdworker).*(pushing respawn).*$");
-//        System.out.println(p.matcher(s1).matches());
-//
-//        System.exit(0);
-
-
-
 
         long startupTime = System.currentTimeMillis();
 
@@ -61,14 +47,6 @@ public class Application {
             savePointFileNamePath = Paths.get(config.save_point);
             processedLogFile = config.log_file;
         }
-
-//        if ( ! CommandChecker.isCommandSupported(config.handler.type) ) {
-//            logger.error("Error. Command '{}' not supported.", config.handler.type);
-//            System.out.println(ERROR_COMMAND_NOT_SUPPORTED);
-//            System.exit(0);
-//        }
-
-//        logger.debug("{} array: {}", config.handler.type.toUpperCase(), Arrays.toString(config.handler.array));
 
         Path logFilePath = Paths.get(processedLogFile);
 
