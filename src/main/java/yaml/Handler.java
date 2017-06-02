@@ -7,7 +7,7 @@ public class Handler {
 
     public String file_name;
     public String charset;
-    public String regex;
+    public String[] grep;
     public boolean case_sensitivity;
 
 }

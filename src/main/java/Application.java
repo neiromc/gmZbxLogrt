@@ -1,4 +1,3 @@
-import handler.ParseHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.ErrorCodes;
@@ -12,9 +11,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * Created by neiro on 19.05.17.
@@ -105,32 +102,28 @@ public class Application {
 
         // get lines
         String charset = (config.handler.charset == null) ? "utf-8" : config.handler.charset;
-        List<String> al = readLogFile(logFilePath, startLineSeq, charset);
-        if ( al.size() == 0 ) {
-//            logger.error("File {} read failed. Exit", logFilePath);
-            System.exit(0);
-        }
+        logger.info("Grep array: " + Arrays.toString(config.handler.grep));
+        long[] result = checkLogFile(logFilePath, startLineSeq, charset, config);
 
-
-        // processing
-        ParseHandler parseHandler = new ParseHandler(config, al);
-
-        int result = parseHandler.handleByRegex();
-        logger.info("Result: {} lines found", result);
-        System.out.println(result);
+//        System.out.println("total: " + result[0]);
+//        System.out.println("matched: " + result[1]);
 
         long totalTime = System.currentTimeMillis() - startupTime;
-        double speed = al.size() / totalTime * 1000;
+        double speed = result[0] / totalTime * 1000;
 
-        logger.info("Processed {} lines at {} ms ({} lines/sec)", al.size(), totalTime, speed);
+        logger.info("Total lines is {}. Find {} lines at {} ms ({} lines/sec)", result[0], result[1], totalTime, speed);
         logger.info("Complete");
 
     }
 
 
 
-    private static List<String> readLogFile(Path filePath, long startSeq, String charset) {
-        List<String> al = new ArrayList<>();
+    private static long[] checkLogFile(Path filePath, long startSeq, String charset, Config config) {
+        String[] grepArray = config.handler.grep;
+        boolean caseSensitivity = config.handler.case_sensitivity;
+
+        long countTotal = 0;
+        long countMatched = 0;
 
         logger.info("Try to loading log file: " + filePath.toAbsolutePath());
 
@@ -142,9 +135,17 @@ public class Application {
                 logger.info("Skip old bytes. Move to {} byte", startSeq);
                 br.skip(startSeq);
             }
+
             String line;
             while ( (line = br.readLine()) != null ) {
-                al.add(line);
+
+                if (! caseSensitivity )
+                    line = line.toLowerCase();
+
+                if ( getGrepResult(line, grepArray, caseSensitivity) )
+                    countMatched++;
+
+                countTotal++;
             }
 
             br.close();
@@ -153,7 +154,7 @@ public class Application {
             logger.info("Start line (startSeq): " + startSeq);
             logger.info("Log file size:  " + fileSize);
 
-            logger.info("Processed lines count: " + al.size());
+            logger.info("Processed lines count {}, matched {} lines ", countTotal, countMatched);
             saveLastLogFile(savePointFileNamePath, fileSize);
 
         } catch (FileNotFoundException e) {
@@ -173,10 +174,20 @@ public class Application {
 //            e.printStackTrace();
         }
 
-        return al;
+        return new long[]{countTotal, countMatched};
 
     }
 
+    private static boolean getGrepResult(String s, String[] grepArray, boolean caseSensitivity) {
+        for (String grepStr: grepArray) {
+            if ( ! caseSensitivity )
+                grepStr = grepStr.toLowerCase();
+
+            if ( ! s.contains(grepStr))
+                return false;
+        }
+        return true;
+    }
 
     private static void saveLastLogFile(Path fileNamePath, long fileSize) {
         //String s = String.valueOf(logPair.getSeq()) + "\n" + logPair.getFileSize();
