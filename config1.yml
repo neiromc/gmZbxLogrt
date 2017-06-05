@@ -16,5 +16,7 @@ handler:
 #  file_name: "/var/log/system.log"
   file_name: "test.log"
   charset: "utf-8"
-  grep: ["com.apple","service only","Pushing respawn"]
+  grep:
+    type: "AND"
+    expression: ["com.apple","service only","Pushing respawn"]
   case_sensitivity: false

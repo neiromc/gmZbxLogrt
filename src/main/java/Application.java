@@ -3,6 +3,7 @@ import org.slf4j.LoggerFactory;
 import util.ErrorCodes;
 import yaml.Config;
 import yaml.ConfigHandler;
+import yaml.GrepTypes;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -102,7 +103,9 @@ public class Application {
 
         // get lines
         String charset = (config.handler.charset == null) ? "utf-8" : config.handler.charset;
-        logger.info("Grep array: " + Arrays.toString(config.handler.grep));
+        logger.info("Grep type \"{}\" in array {}",
+                config.handler.grep.type,
+                Arrays.toString(config.handler.grep.expression));
         long[] result = checkLogFile(logFilePath, startLineSeq, charset, config);
 
 //        System.out.println("total: " + result[0]);
@@ -119,7 +122,8 @@ public class Application {
 
 
     private static long[] checkLogFile(Path filePath, long startSeq, String charset, Config config) {
-        String[] grepArray = config.handler.grep;
+        GrepTypes grepType = config.handler.grep.type;
+        String[] grepArray = config.handler.grep.expression;
         boolean caseSensitivity = config.handler.case_sensitivity;
 
         long countTotal = 0;
@@ -142,7 +146,7 @@ public class Application {
                 if (! caseSensitivity )
                     line = line.toLowerCase();
 
-                if ( getGrepResult(line, grepArray, caseSensitivity) )
+                if ( getGrepResult(line, grepArray, caseSensitivity, grepType) )
                     countMatched++;
 
                 countTotal++;
@@ -178,15 +182,40 @@ public class Application {
 
     }
 
-    private static boolean getGrepResult(String s, String[] grepArray, boolean caseSensitivity) {
-        for (String grepStr: grepArray) {
-            if ( ! caseSensitivity )
-                grepStr = grepStr.toLowerCase();
+    private static boolean getGrepResult(String s, String[] grepArray, boolean caseSensitivity, GrepTypes grepType) {
 
-            if ( ! s.contains(grepStr))
-                return false;
+        if ( grepType.equals(GrepTypes.AND)) {
+            for (String grepStr : grepArray) {
+                if (! caseSensitivity)
+                    grepStr = grepStr.toLowerCase();
+
+                if (!s.contains(grepStr))
+                    return false;
+            }
+            return true;
         }
-        return true;
+
+        if ( grepType.equals(GrepTypes.OR)) {
+            boolean orResult = false;
+            for (String grepStr : grepArray) {
+                if (! caseSensitivity)
+                    grepStr = grepStr.toLowerCase();
+
+                if ( s.contains(grepStr) ) {
+                    orResult = true;
+                    break;
+                }
+
+            }
+
+            return orResult;
+
+
+        }
+
+        logger.error("Bad type of grep: " + grepType);
+        return false;
+
     }
 
     private static void saveLastLogFile(Path fileNamePath, long fileSize) {
