@@ -117,6 +117,8 @@ public class Application {
         logger.info("Total lines is {}. Find {} lines at {} ms ({} lines/sec)", result[0], result[1], totalTime, speed);
         logger.info("Complete");
 
+        System.out.println(result[1]);
+
     }
 
 
