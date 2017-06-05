@@ -128,7 +128,6 @@ public class Application {
     private static long[] checkLogFile(Path filePath, long startSeq, String charset, Config config) {
         GrepTypes grepType = config.handler.grep.type;
         String[] grepArray = config.handler.grep.expression;
-        boolean caseSensitivity = config.handler.case_sensitivity;
 
         long countTotal = 0;
         long countMatched = 0;
