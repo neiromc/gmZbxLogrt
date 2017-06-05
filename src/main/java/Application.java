@@ -34,7 +34,10 @@ public class Application {
 
         long startupTime = System.currentTimeMillis();
 
+
         logger.info("Running application...");
+        if ( logger.isDebugEnabled() )
+            logger.debug(">>>> DEBUG is ENABLED <<<<");
 
         ConfigHandler configHandler = ConfigHandler.getInstanse();
         if ( ! configHandler.load(args)) {
@@ -49,6 +52,7 @@ public class Application {
         }
 
         Path logFilePath = Paths.get(processedLogFile);
+
 
         //load last log
         long startLineSeq = 0;
@@ -126,13 +130,10 @@ public class Application {
 
 
     private static long[] checkLogFile(Path filePath, long startSeq, String charset, Config config) {
-        GrepTypes grepType = config.handler.grep.type;
-        String[] grepArray = config.handler.grep.expression;
+        logger.info("Try to loading log file: " + filePath.toAbsolutePath());
 
         long countTotal = 0;
         long countMatched = 0;
-
-        logger.info("Try to loading log file: " + filePath.toAbsolutePath());
 
         try {
             long fileSize = Files.size(filePath);
@@ -145,23 +146,18 @@ public class Application {
             }
 
             String line;
-            int c = 0;
             while ( (line = br.readLine()) != null ) {
-                c++;
-
-                if ( getGrepResult(line, grepArray, grepType) )
+                if ( getGrepResult(config, line) )
                     countMatched++;
 
                 countTotal++;
 
-                if ( c % 1_000_000 == 0 )
-                    logger.info("current line: {}, matched: {}...", c, countMatched);
-
+                if ( logger.isDebugEnabled() )
+                    if ( countTotal % 1_000_000 == 0 )
+                        logger.debug("current line: {}, matched: {}...", countTotal, countMatched);
             }
-
             br.close();
 
-            //long lastSeq = fileSize;
             logger.info("Start line (startSeq): " + startSeq);
             logger.info("Log file size:  " + fileSize);
 
@@ -189,13 +185,14 @@ public class Application {
 
     }
 
-    private static boolean getGrepResult(String s, String[] grepArray, GrepTypes grepType) {
+    private static boolean getGrepResult(Config config, String s) {
+        String[] grepArray = config.handler.grep.expression;
+        GrepTypes grepType = config.handler.grep.type;
 
         // Type: AND
         if ( grepType.equals(GrepTypes.AND)) {
             for (String grepStr : grepArray) {
-
-                if (!s.contains(grepStr))
+                if (! s.contains(grepStr))
                     return false;
             }
             return true;
@@ -203,19 +200,12 @@ public class Application {
 
         // Type: OR
         if ( grepType.equals(GrepTypes.OR)) {
-            boolean orResult = false;
             for (String grepStr : grepArray) {
-
-                if ( s.contains(grepStr) ) {
-                    orResult = true;
-                    break;
+                if (s.contains(grepStr)) {
+                    return true;
                 }
-
             }
-
-            return orResult;
-
-
+            return false;
         }
 
         logger.error("Bad type of grep: " + grepType);
@@ -227,7 +217,6 @@ public class Application {
         //String s = String.valueOf(logPair.getSeq()) + "\n" + logPair.getFileSize();
         logger.info("Save lastLog ({})... => fileSize: {}",
                 fileNamePath.toAbsolutePath(),
-//                String.valueOf(logPair.getSeq()),
                 fileSize
         );
 
@@ -249,12 +238,10 @@ public class Application {
             String s = Files.readAllLines(fileNamePath).get(0);
             if ( s != null ) {
                 if ( (fileSize = Long.parseLong(s)) > 0 ) {
-                    logger.info("Succesfully get fileSize from save point file: {} bytes", fileSize);
+                    logger.info("Successfully get last fileSize from save point file: {} bytes", fileSize);
                     return Long.parseLong(s);
                 }
             }
-//            logger.info(fileNamePath + " size = " + al.size());
-//            logger.info("Succesfully get data: " + s);
 
         } catch (IOException e) {
             System.out.println(ErrorCodes.ERROR_CANT_LOAD_FILE);
