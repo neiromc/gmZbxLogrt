@@ -142,21 +142,15 @@ public class Application {
 
             if (startSeq > 0) {
                 logger.info("Skip old bytes. Move to {} byte", startSeq);
-                br.skip(startSeq);
-                logger.info("Bytes skipped.");
+                logger.info("Skipped {} bytes", br.skip(startSeq));
             }
-
-
 
             String line;
             int c = 0;
             while ( (line = br.readLine()) != null ) {
                 c++;
 
-                if (! caseSensitivity )
-                    line = line.toLowerCase();
-
-                if ( getGrepResult(line, grepArray, caseSensitivity, grepType) )
+                if ( getGrepResult(line, grepArray, grepType) )
                     countMatched++;
 
                 countTotal++;
@@ -196,27 +190,11 @@ public class Application {
 
     }
 
-    public static void skipLine(BufferedReader br) throws IOException {
-        while(true) {
-            int c = br.read();
-            if(c == -1 || c == '\n')
-                return;
-            if(c == '\r') {
-                br.mark(1);
-                c = br.read();
-                if(c != '\n')
-                    br.reset();
-                return;
-            }
-        }
-    }
+    private static boolean getGrepResult(String s, String[] grepArray, GrepTypes grepType) {
 
-    private static boolean getGrepResult(String s, String[] grepArray, boolean caseSensitivity, GrepTypes grepType) {
-
+        // Type: AND
         if ( grepType.equals(GrepTypes.AND)) {
             for (String grepStr : grepArray) {
-                if (! caseSensitivity)
-                    grepStr = grepStr.toLowerCase();
 
                 if (!s.contains(grepStr))
                     return false;
@@ -224,11 +202,10 @@ public class Application {
             return true;
         }
 
+        // Type: OR
         if ( grepType.equals(GrepTypes.OR)) {
             boolean orResult = false;
             for (String grepStr : grepArray) {
-                if (! caseSensitivity)
-                    grepStr = grepStr.toLowerCase();
 
                 if ( s.contains(grepStr) ) {
                     orResult = true;
