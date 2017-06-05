@@ -1,5 +1,6 @@
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import util.Debug;
 import util.ErrorCodes;
 import yaml.Config;
 import yaml.ConfigHandler;
@@ -91,7 +92,8 @@ public class Application {
                     }
 
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    if (logger.isDebugEnabled())
+                        Debug.print(logger, e);
                 }
 
             }
@@ -137,13 +139,19 @@ public class Application {
             long fileSize = Files.size(filePath);
 
             BufferedReader br = Files.newBufferedReader(filePath, Charset.forName(charset));
+
             if (startSeq > 0) {
                 logger.info("Skip old bytes. Move to {} byte", startSeq);
                 br.skip(startSeq);
+                logger.info("Bytes skipped.");
             }
 
+
+
             String line;
+            int c = 0;
             while ( (line = br.readLine()) != null ) {
+                c++;
 
                 if (! caseSensitivity )
                     line = line.toLowerCase();
@@ -152,6 +160,10 @@ public class Application {
                     countMatched++;
 
                 countTotal++;
+
+                if ( c % 1_000_000 == 0 )
+                    logger.info("current line: {}, matched: {}...", c, countMatched);
+
             }
 
             br.close();
@@ -166,22 +178,37 @@ public class Application {
         } catch (FileNotFoundException e) {
             System.out.println(ErrorCodes.ERROR_FILE_NOT_FOUND);
             logger.error("File {} not found", filePath.toAbsolutePath());
-            if ( logger.isDebugEnabled() ) {
-                logger.debug(e.getMessage() + "\n" + e.getCause());
-            }
+            if (logger.isDebugEnabled())
+                Debug.print(logger, e);
+            System.out.println("-10");
+            System.exit(-10);
         } catch (IOException e) {
             System.out.println(ErrorCodes.ERROR_CANT_READ_FILE);
-            logger.error("Can't read file {}. I/O error", filePath.toAbsolutePath());
-            if ( logger.isDebugEnabled() ) {
-                logger.debug("----------------");
-                logger.debug(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
-                logger.debug("----------------");
+            logger.error("Can't read file {}. I/O error. Check charset!", filePath.toAbsolutePath());
+            if (logger.isDebugEnabled()) {
+                Debug.print(logger, e);
             }
-//            e.printStackTrace();
+            System.out.println("-11");
+            System.exit(-11);
         }
 
         return new long[]{countTotal, countMatched};
 
+    }
+
+    public static void skipLine(BufferedReader br) throws IOException {
+        while(true) {
+            int c = br.read();
+            if(c == -1 || c == '\n')
+                return;
+            if(c == '\r') {
+                br.mark(1);
+                c = br.read();
+                if(c != '\n')
+                    br.reset();
+                return;
+            }
+        }
     }
 
     private static boolean getGrepResult(String s, String[] grepArray, boolean caseSensitivity, GrepTypes grepType) {
@@ -233,9 +260,8 @@ public class Application {
         } catch (IOException e) {
             System.out.println(ErrorCodes.ERROR_CANT_SAVE_FILE);
             logger.error("Can't save file {}. I/O error", fileNamePath.toAbsolutePath());
-            if ( logger.isDebugEnabled() ) {
-                logger.debug(e.getMessage() + "\n" + e.getCause());
-            }
+            if (logger.isDebugEnabled())
+                Debug.print(logger, e);
         }
     }
 
@@ -257,9 +283,8 @@ public class Application {
         } catch (IOException e) {
             System.out.println(ErrorCodes.ERROR_CANT_LOAD_FILE);
             logger.error("Can't load file {}. I/O error", fileNamePath.toAbsolutePath());
-            if ( logger.isDebugEnabled() ) {
-                logger.debug(e.getMessage() + "\n" + e.getCause());
-            }
+            if (logger.isDebugEnabled())
+                Debug.print(logger, e);
         }
 
         return -1;
