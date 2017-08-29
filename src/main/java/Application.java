@@ -13,7 +13,9 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by neiro on 19.05.17.
@@ -138,6 +140,7 @@ public class Application {
         try {
             long fileSize = Files.size(filePath);
 
+
             BufferedReader br = Files.newBufferedReader(filePath, Charset.forName(charset));
 
             if (startSeq > 0) {
@@ -234,12 +237,17 @@ public class Application {
         logger.info("Trying loading last log from: " + fileNamePath.toAbsolutePath());
 
         long fileSize;
+
+        List<String> lines = new ArrayList<>();
+
         try {
-            String s = Files.readAllLines(fileNamePath).get(0);
-            if ( s != null ) {
-                if ( (fileSize = Long.parseLong(s)) > 0 ) {
+            lines = Files.readAllLines(fileNamePath);
+//            String s = Files.readAllLines(fileNamePath).get(0);
+
+            if ( lines.size() > 0 ) {
+                if ( (fileSize = Long.parseLong(lines.get(0))) > 0 ) {
                     logger.info("Successfully get last fileSize from save point file: {} bytes", fileSize);
-                    return Long.parseLong(s);
+                    return Long.parseLong(lines.get(0));
                 }
             }
 
