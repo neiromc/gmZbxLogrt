@@ -1,3 +1,4 @@
+:no_entry: [DEPRECATED]
 ## Readme ##
 
 Simple analog for Zabbix.logrt
